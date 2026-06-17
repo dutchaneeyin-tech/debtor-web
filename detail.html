@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>รายละเอียดลูกหนี้</title>
+
+<style>
+body{
+  font-family: Tahoma, sans-serif;
+  margin:20px;
+  background:#f8f9fa;
+}
+
+h1{
+  margin-bottom:10px;
+}
+
+.summary{
+  background:white;
+  padding:15px;
+  border-radius:10px;
+  margin-bottom:20px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.1);
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  background:white;
+}
+
+th,td{
+  border:1px solid #ddd;
+  padding:10px;
+  font-size:14px;
+}
+
+th{
+  background:#0d6efd;
+  color:white;
+}
+
+td{
+  vertical-align:top;
+}
+</style>
+</head>
+
+<body>
+<a class="back" href="index.html">← กลับหน้าเลือกตำบล</a>
+<h1 id="title">รายละเอียดลูกหนี้</h1>
+
+<div class="summary">
+  <p>จำนวนโครงการทั้งหมด: <span id="totalCount">0</span> โครงการ</p>
+  <p>ยอดหนี้รวม: <span id="totalDebt">0</span> บาท</p>
+</div>
+
+<table>
+
+<thead>
+<tr>
+  <th>เลขที่สัญญา</th>
+  <th>ชื่อโครงการ</th>
+  <th>ผู้เสนอโครงการ/ ผู้ร่วมโครงการ</th>
+  <th>วงเงินอนุมัติ</th>
+  <th>วันที่เริ่มต้นสัญญา</th>
+  <th>วันที่สิ้นสุดสัญญา</th>
+  <th>วันที่สิ้นสุดสัญญา</th>
+  <th>ลูกหนี้คงเหลือ ณ 1 ต.ค. 2568 (A)</th>
+  <th>ยอดหนี้คงเหลือ</th>
+  <th>สถานะการชำระหนี้</th>
+  <th>สถานะโครงการ</th>
+</tr>
+</thead>
+
+<tbody id="tableBody"></tbody>
+</table>
+
+  
+<script>
+  //ดึงข้อมูล
+
+const params = new URLSearchParams(window.location.search);
+const area = params.get("area") || "กะทู้";
+
+document.getElementById("title").innerText =
+  "รายละเอียดลูกหนี้ตำบล : " + area;
+
+async function loadData() {
+  try {
+    const response = await fetch(
+      "http://localhost:5678/webhook/debtor-area?area=" +
+          //*"http://192.168.1.7:5678/webhook/debtor-area?area=" +*//
+	
+      encodeURIComponent(area)
+    );
+
+    const data = await response.json();
+    console.log("DATA FROM N8N:", data);
+
+    const rows = Array.isArray(data) ? data : [data];
+
+    const tbody = document.getElementById("tableBody");
+    const totalCount = document.getElementById("totalCount");
+    const totalDebt = document.getElementById("totalDebt");
+
+    tbody.innerHTML = "";
+    totalCount.innerText = rows.length;
+
+    let total = 0;
+
+    rows.forEach(row => {
+	
+     const debt = parseFloat(
+  String(row["ยอดหนี้คงเหลือ"] || 0)
+    .replace(/,/g, "")
+    .trim()
+);
+
+if (!isNaN(debt)) {
+  total += debt;
+}
+
+
+      tbody.innerHTML += `
+        <tr>
+          <td>${row["เลขที่สัญญา"] || ""}</td>
+          <td>${row["ชื่อโครงการ"] || ""}</td>
+          <td>${row["ผู้เสนอโครงการ/ผู้ร่วมโครงการ"] || ""}</td>
+          <td>${row["วงเงินอนุมัติ"] || ""}</td>
+          <td>${row["วันที่เริ่มต้นสัญญา"] || ""}</td>
+          <td>${row["วันที่สิ้นสุดสัญญา"] || ""}</td>
+          <td>${row["วันที่สิ้นสุดสัญญา"] || ""}</td>
+		  <td>${row["ลูกหนี้คงเหลือ ณ 1 ต.ค. 2568 (A)"] || ""}</td>
+          <td>${row["ยอดหนี้คงเหลือ"] || ""}</td>
+          <td>${row["สถานะการชำระหนี้"] || ""}</td>
+          <td>${row["สถานะโครงการ"] || ""}</td>
+        </tr>
+      `;
+    });
+
+    totalDebt.innerText = total.toLocaleString("th-TH");
+
+  } catch (err) {
+    console.error(err);
+    alert("ERROR: " + err.message);
+  }
+}
+
+loadData();
+</script>
+
+</body>
+</html>
