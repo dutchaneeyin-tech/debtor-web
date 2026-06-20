@@ -88,9 +88,14 @@ document.getElementById("title").innerText =
 
 async function loadData() {
   try {
-   const response = await fetch(
+const response = await fetch(
   "https://punk-jacket-tartness.ngrok-free.dev/webhook/debtor-area?area=" +
-  encodeURIComponent(area)
+  encodeURIComponent(area),
+  {
+    headers: {
+      "ngrok-skip-browser-warning": "true"
+    }
+  }
 );
 
 	  const data = await response.json();
