@@ -99,6 +99,13 @@ const response = await fetch(
 );
 
 	  const data = await response.json();
+
+console.log("DATA:", data);
+
+if (!Array.isArray(data)) {
+    alert("ข้อมูลไม่ใช่ Array");
+    return;
+}
     console.log("DATA FROM N8N:", data);
 
     const rows = Array.isArray(data) ? data : [data];
